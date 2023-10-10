@@ -51,6 +51,11 @@ docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
 https://localhost:8080/
 ```
 
+## Use Docker Container's Bash Shell
+```
+docker exec -it jenkins-blueocean bash
+```
+
 ## Installation Reference:
 https://www.jenkins.io/doc/book/installing/docker/
 
@@ -58,12 +63,47 @@ https://www.jenkins.io/doc/book/installing/docker/
 ## alpine/socat container to forward traffic from Jenkins to Docker Desktop on Host Machine
 
 https://stackoverflow.com/questions/47709208/how-to-find-docker-host-uri-to-be-used-in-jenkins-docker-plugin
-```
-docker run -d --restart=always -p 127.0.0.1:2376:2375 --network jenkins -v /var/run/docker.sock:/var/run/docker.sock alpine/socat tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
-docker inspect <container_id> | grep IPAddress
-```
+
+> docker run -d --restart=always -p 127.0.0.1:2376:2375 --network jenkins -v /var/run/docker.sock:/var/run/docker.sock alpine/socat tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+
+To get Container IP Address:
+> docker inspect <container_id> | grep IPAddress
+
+OR
+> docker inspect <container_name> | grep IPAddress
+
+To get TCP port:
+> docker inspect eloquent_williamson | grep tcp
+
+## Connecting to Docker container from Jenkins as a cloud agent
+
+> Put Docker Host URI as : tcp://172.19.0.3:2375
+
+## Creating a Docker Agent Template
+
+> Name: docker-agent-apline
+> labels: docker-agent-alpine
+> Docker Image: jenkins/jnlp-agent-python
+> Instance Capacity: 2
+> Remote File System Root: /home/jenkins
 
 ## Using my Jenkins Python Agent
 ```
 docker pull devopsjourney1/myjenkinsagents:python
 ```
+
+## Using jenkins agent in a job
+
+go to job configuration -> restrict where this project can be run -> label expression -> docker-agent-alpine
+Now run the job again
+
+# Running Jenkins jobs automatically
+
+- Go to job configuration -> Build Triggers -> Poll SCM -> Schedule: * /5 * * * * (put spaces around *, every 5 minutes check for changes in the repo)
+
+# Pipelines
+
+- We can use 'jenkins' file with jenkins Script writtin in groovy language
+- or we can write the script in the job configuration itself.
+
+- the pipeline stages might fali if it enounters error or stage above it fails.
